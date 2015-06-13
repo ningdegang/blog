@@ -1,0 +1,27 @@
+<html> 
+<head>
+<link rel="stylesheet" href="{{ static_url("css/style.css") }}">
+{% block head %}
+{% end %}
+</head>
+<body>
+    <div id='head'>
+        {% block header %}
+        {% end %}
+    </div>   
+    <div id='main'>
+        <div id='side'>
+            {% block side %}
+            {% end %}
+        </div>
+        <div id='body'>
+            {% block body %}
+            {% end %} 
+        </div>
+    </div>
+    <div id='foot'>
+        {% block footer %}
+        {% end %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block body %}
+<form action="/regist" method="POST">
+    {% raw xsrf_form_html() %}
+    Username:            <input type="text" name="username" />
+    Input Passwd:        <input type="password" name="passwd" />
+    Input Passwd Again:  <input type="password" name="passwd2" />
+    <input type="submit" />
+</form>
+
+{% end %}

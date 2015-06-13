@@ -9,8 +9,9 @@ import tornado.web
 from tornado.options import define, options
 
 from comm import logic
+from comm.logic import blog
 
-define("port", default=8080, help="run on the given port", type=int)
+define("port", default=80, help="run on the given port", type=int)
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -19,13 +20,22 @@ class BaseHandler(tornado.web.RequestHandler):
 class IndexHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        self.render('index.htm', user=self.current_user)
+        b = blog() 
+        num, ret = b.get_all_articles()
+        t, c = list(), list()
+        if num > 0 :
+            logging.error("ret : %s" % str(ret))
+            for i in range(len(ret)):
+                t.append(ret[i][2])
+                c.append(ret[i][3])
+            self.render('index.htm', titles=t, contexts=c)
 
 class LoginHandler(BaseHandler):
     def get(self):
         self.render("login.html")
     def post(self):
-        if logic.verify(self.get_argument("username"), self.get_argument("passwd")):
+        b = blog()  
+        if b.VerifyUser(self.get_argument("username"), self.get_argument("passwd")):
             self.set_secure_cookie("sessionid", self.get_argument("username"))
             self.redirect("/")
         else:
@@ -35,10 +45,42 @@ class LoginHandler(BaseHandler):
 
 class LogoutHandler(BaseHandler):
     def get(self):
-        #if (self.get_argument("logout", None)):
         self.clear_cookie("sessionid")
         self.redirect("/")
 
+class ListHandler(BaseHandler):
+    def get(self):
+        title = self.get_argument("title")
+        b = blog()
+        num, ret = b.get_context_by_title(title)
+        if num == 0 : return self.render("list.html", t="no suck articles", c = "There is something wrong with it")
+        context = ret[0][0]
+        self.render("list.html", t=title, c = context)
+
+class RegisterHandler(BaseHandler):
+    def get(self):
+        self.render("register.html")
+    def post(self):
+        name = self.get_argument("username")
+        passwd  = self.get_argument("passwd")
+        b = blog()
+        if( b.query_user("name") ) : return self.write("user exists")
+        num, ret = b.RegisterUser(name, passwd)
+        if num == 1 : return self.write("register sucess")
+        self.write("register failed")
+class CreateBlog(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        self.render("createblog.html")
+    @tornado.web.authenticated
+    def post(self):
+        b = blog()
+        author = self.get_current_user()
+        title = self.get_argument("title")
+        context =  self.get_argument("context")
+        num , ret = b.save_blog(author, title, context)
+        if num == 1: return self.write("create blog sucess")
+        self.write("create blog failed") 
 
 class MungedPageHandler(BaseHandler):
     def map_by_first_letter(self, text):
@@ -56,13 +98,13 @@ class MungedPageHandler(BaseHandler):
         change_lines = text_to_change.split('\r\n')
         self.render('munged.html', source_map=source_map, change_lines=change_lines, choice=random.choice)
 if __name__ == '__main__':
-    tornado.options.options.log_file_prefix = os.path.join(os.path.dirname(__file__), "log")+ "/access.log"
-    tornado.options.parse_command_line()
     handlers = [
         (r'/', IndexHandler), 
         (r'/login', LoginHandler),
         (r'/logout', LogoutHandler),
         (r'/poem', MungedPageHandler),
+        (r'/list', ListHandler),
+        (r'/regist', RegisterHandler),
     ]
     settings = {
     "template_path": os.path.join(os.path.dirname(__file__), "templates"),
@@ -76,6 +118,8 @@ if __name__ == '__main__':
         debug=True,
         **settings)
     #logic.deamon()
+    #tornado.options.options.log_file_prefix = os.path.join(os.path.dirname(__file__), "log")+ "/access.log"
+    tornado.options.parse_command_line()
     http_server = tornado.httpserver.HTTPServer(app)
     http_server.listen(options.port)
     tornado.ioloop.IOLoop.instance().start()
