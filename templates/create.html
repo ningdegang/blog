@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block head %}
+create new blog
+{% end %}
+{% block body %} 
+<form method='post' action="create">
+    {% raw xsrf_form_html() %}
+    <p>title: <input type="text" name="title" class="create_blog_title"/></p>
+    <p>blog: <textarea name="context" rows=10 wrap='soft' class="create_blog_context" ></textarea></p>
+    <input type="submit" value='submit' />
+</form>
+{% end %}
+    

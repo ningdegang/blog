@@ -1,6 +1,18 @@
 {% extends 'base.html' %}
+{% block header %}
+<div class="title">
+<p><span> {{t}} </span></p>
+<p class="authorandtime">author: {{au}}</p>
+<p class="authorandtime">time: {{ createtime }}</p>
+</div>
+{% end %}
 {% block side %}
-<span> {{t }} </span>
+<span> all articles</span>
+<ul>
+{% for tt in titles %}
+<li><a href="/list?title={{tt}}">{{tt}}</a> </li>
+{% end %}
+</ul>
 {% end %}
 {% block body %}
 <p> {{ c }} </p>

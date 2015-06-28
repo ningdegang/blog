@@ -20,14 +20,14 @@ class BaseHandler(tornado.web.RequestHandler):
 class IndexHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
+        #self.render('index.html')
         b = blog() 
         num, ret = b.get_all_articles()
         t, c = list(), list()
         if num > 0 :
-            logging.error("ret : %s" % str(ret))
-            for i in range(len(ret)):
-                t.append(ret[i][2])
-                c.append(ret[i][3])
+            t = [x[0] for x in ret]
+            c = [x[1] for x in ret]
+            logging.info("titles: %s" % str(t))
             self.render('index.htm', titles=t, contexts=c)
 
 class LoginHandler(BaseHandler):
@@ -53,9 +53,14 @@ class ListHandler(BaseHandler):
         title = self.get_argument("title")
         b = blog()
         num, ret = b.get_context_by_title(title)
-        if num == 0 : return self.render("list.html", t="no suck articles", c = "There is something wrong with it")
-        context = ret[0][0]
-        self.render("list.html", t=title, c = context)
+        if num == 0 : return self.redirect("/")
+        context, ct ,author = ret[0][0], str(ret[0][1]), ret[0][2] 
+        context = context.replace("\r\n", "<br>")
+        tt = list()
+        num ,ret = b.get_all_articles()
+        if( num >0):
+            tt = [t[0] for t in ret]
+        self.render("list.html",titles=tt,  t=title, c = context, createtime = ct, au = author)
 
 class RegisterHandler(BaseHandler):
     def get(self):
@@ -66,45 +71,29 @@ class RegisterHandler(BaseHandler):
         b = blog()
         if( b.query_user("name") ) : return self.write("user exists")
         num, ret = b.RegisterUser(name, passwd)
-        if num == 1 : return self.write("register sucess")
-        self.write("register failed")
-class CreateBlog(BaseHandler):
+        if num == 1 : return self.redirect("/login")
+class CreateBlogHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        self.render("createblog.html")
+        self.render("create.html")
     @tornado.web.authenticated
     def post(self):
         b = blog()
         author = self.get_current_user()
         title = self.get_argument("title")
         context =  self.get_argument("context")
-        num , ret = b.save_blog(author, title, context)
-        if num == 1: return self.write("create blog sucess")
+        num,ret= b.save_blog(author, title, context)
+        if num == 1: return self.redirect("/")
         self.write("create blog failed") 
 
-class MungedPageHandler(BaseHandler):
-    def map_by_first_letter(self, text):
-        mapped = dict()
-        for line in text.split('\r\n'):
-            for word in [x for x in line.split(' ') if len(x) > 0]:
-                if word[0] not in mapped: mapped[word[0]] = []
-                mapped[word[0]].append(word)
-        return mapped
-
-    def post(self):
-        source_text = self.get_argument('source')
-        text_to_change = self.get_argument('change')
-        source_map = self.map_by_first_letter(source_text)
-        change_lines = text_to_change.split('\r\n')
-        self.render('munged.html', source_map=source_map, change_lines=change_lines, choice=random.choice)
 if __name__ == '__main__':
     handlers = [
         (r'/', IndexHandler), 
         (r'/login', LoginHandler),
         (r'/logout', LogoutHandler),
-        (r'/poem', MungedPageHandler),
         (r'/list', ListHandler),
         (r'/regist', RegisterHandler),
+        (r'/create', CreateBlogHandler),
     ]
     settings = {
     "template_path": os.path.join(os.path.dirname(__file__), "templates"),

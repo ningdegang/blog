@@ -34,23 +34,31 @@ class mysql():
         self.flag = True
     def query(self, sql):
         if( not self.flag):self.init()
-        num = self.cur.execute(sql);
+        logging.info("sql: %s" % sql)
+        try:
+            num = self.cur.execute(sql);
+        except:
+            self.init()
+            return 0, None
+        self.conn.commit()
+        logging.info(str(num))
         if num == 0: return num, None
         results = self.cur.fetchall()
+        logging.info("fetch all return: %s" % str(results))
         return num,results
         
 
 class blog:
     db = mysql() 
     def save_blog(self, author, title, context):
-        blog.db.query("insert into article (author, title, context) values ('%s', '%s', '%s')" % (author, title, context))
+        return blog.db.query("insert into articles (author, title, context) values ('%s', '%s', '%s');" % (author, title, context))
     def get_all_titles(self):
-        return  blog.db.query("select title from articles;")
+        return blog.db.query("select title from articles;")
         
     def get_context_by_title(self, title):
-        return  blog.db.query("select context from articles where title = '%s' " % title)
+        return blog.db.query("select context, createtime,author from articles where title = '%s'; " % title)
     def get_all_articles(self):
-        return blog.db.query("select * from articles ;")
+        return blog.db.query("select title, context from articles ;")
 
     def query_user(self,name):
         num, ret = blog.db.query("select user from user where user ='%s';" % name)
@@ -58,13 +66,13 @@ class blog:
         return False
 
     def RegisterUser(self, name, passwd):
-        return blog.db.query("insert into user ( user, passwd) values ('%s', '%s')" % (name, passwd))
+        return blog.db.query("insert into user ( user, passwd) values ('%s', '%s');" % (name, passwd))
         
         
     def VerifyUser(self, user, passwd):
         num ,ret = blog.db.query("select passwd from user where user='%s'; " % user)
         if(num == 0): return False
-        logging.error("%s" % str(ret))
+        logging.info("passwd from web:%s, passw from db:%s" % (passwd,str(ret[0][0])))
         if ret[0][0] == passwd: return True 
         return False
         

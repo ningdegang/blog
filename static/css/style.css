@@ -1,28 +1,56 @@
-body {
-    font-family: Helvetica,Arial,sans-serif;
+@charset "utf-8";
+html{
+	font-family: Bitter, Cambria, "Hoefler Text", "Liberation Serif", Times, "Times New Roman", serif;
+	width: 100%;
+	height: 100%;
+	font-weight: 300;
+	font-size: 16px;
+	line-height: 23px;
+	text-shadow: 1px 1px 1px rgba(255,255,255,0.004);
 }
-#head
+li
 {
-    position:absolute;
-    top:20px;
-    left:20px;
+    height:40px;
+    list-style-type:disc;
 }
-#logout {
-    position:relative;
-    top:-20px;
-    left:1000px;
-}
-#side
-{
-    position:absolute;
-    top:150px;
-    left:5%;
-    width:80px;
+.head{
+    text-align:center;
+    background-color:#eee; 
 }
 
-#body
-{
-    position:absolute;
-    top:50px;
-    left:25%;
+.main{ 
+    background-color:#777; 
+    url(../images/noisy.png); 
+    font-size:15px;
+    width:100%;
+}
+.side{
+    margin-left:5%;
+    margin-top: 10%;
+    float:left;
+    width:20%;
+}
+.context{
+    margin-left:6%;
+    margin-top: 5%;
+    float:left;
+    line-height: 30px;
+    word-break : normal | break-all | keep-all;
+    width: 50%;
+}
+.title{
+    text-align:center;
+}
+.authorandtime {
+    text-align:right;
+}
+.logout{
+    text-align:right;
+}
+.create_blog_title{
+    width: 100%;
+}
+
+.create_blog_context{
+    width:100%;
 }

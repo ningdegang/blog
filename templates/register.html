@@ -1,12 +1,14 @@
 {% extends "base.html" %}
 
 {% block body %}
-<form action="/regist" method="POST">
+<script src="{{static_url('js/md5.js')}}"></script>
+<script src="{{static_url('js/login.js')}}"></script>
+<form action="/regist" method="POST" onsubmit="return regist_check();">
     {% raw xsrf_form_html() %}
-    Username:            <input type="text" name="username" />
-    Input Passwd:        <input type="password" name="passwd" />
-    Input Passwd Again:  <input type="password" name="passwd2" />
-    <input type="submit" />
+    <p>Username:            <input type="text" name='username' id ="name" /></p>
+    <p>Passwd:        <input type="password" name="passwd"  id="passwd" /></p>
+    <p>Confirm Passwd:  <input type="password" id='confirmpasswd'/></p>
+    <input type="submit"/>
 </form>
 
 {% end %}
