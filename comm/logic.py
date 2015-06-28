@@ -41,10 +41,10 @@ class mysql():
             self.init()
             return 0, None
         self.conn.commit()
-        logging.info(str(num))
+        logging.debug("total db action: %d rows" % num)
         if num == 0: return num, None
         results = self.cur.fetchall()
-        logging.info("fetch all return: %s" % str(results))
+        logging.debug("fetch all return: %s" % str(results))
         return num,results
         
 
@@ -52,13 +52,20 @@ class blog:
     db = mysql() 
     def save_blog(self, author, title, context):
         return blog.db.query("insert into articles (author, title, context) values ('%s', '%s', '%s');" % (author, title, context))
-    def get_all_titles(self):
-        return blog.db.query("select title from articles;")
+    def update_blog(self,old_title, old_context, new_title, new_context, author):
+        return blog.db.query("update articles set ( title, context) values ('%s', '%s') where title='%s' and context='%s' and author='%s' ;" % (new_title, new_context, old_title,old_context,author))
+
+    def del_blog(self, author, title):
+        return blog.db.query("delete from articles where author='%s' and title='%s';" % (author, title))
+
+    def get_all_titles(self, author):
+        return blog.db.query("select title from articles where author='%s';" % author)
         
-    def get_context_by_title(self, title):
-        return blog.db.query("select context, createtime,author from articles where title = '%s'; " % title)
-    def get_all_articles(self):
-        return blog.db.query("select title, context from articles ;")
+    def get_context_by_title(self, author, title):
+        return blog.db.query("select context, createtime,author from articles where author='%s' and title = '%s'; " % (author,title))
+
+    def get_all_articles(self, author):
+        return blog.db.query("select title, context from articles where author='%s' ;" % author)
 
     def query_user(self,name):
         num, ret = blog.db.query("select user from user where user ='%s';" % name)
