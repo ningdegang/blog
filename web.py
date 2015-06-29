@@ -18,9 +18,10 @@ class BaseHandler(tornado.web.RequestHandler):
         return self.get_secure_cookie("sessionid")
 
 class IndexHandler(BaseHandler):
-    @tornado.web.authenticated
+    #@tornado.web.authenticated
     def get(self):
-        #self.render('index.html')
+        self.render('boot.html')
+        return
         b = blog() 
         num, ret = b.get_all_articles(self.get_current_user())
         t, c = list(), list()
