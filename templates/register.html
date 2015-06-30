@@ -2,7 +2,7 @@
 
 {% block body %}
 <script src="{{static_url('js/md5.js')}}"></script>
-<script src="{{static_url('js/login.js')}}"></script>
+<script src="{{static_url('js/main.js')}}"></script>
 <form action="/regist" method="POST" onsubmit="return regist_check();">
     {% raw xsrf_form_html() %}
     <p>Username:            <input type="text" name='username' id ="name" /></p>
