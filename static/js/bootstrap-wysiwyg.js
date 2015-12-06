@@ -1,7 +1,7 @@
 /* http://github.com/mindmup/bootstrap-wysiwyg */
 /*global jQuery, $, FileReader*/
 /*jslint browser:true*/
-jQuery(function ($) {
+(function ($) {
     'use strict';
     var readFileIntoDataUrl = function (fileInfo) {
         var loader = $.Deferred(),
@@ -22,9 +22,10 @@ jQuery(function ($) {
         var editor = this,
             selectedRange,
             options,
+            toolbarBtnSelector,
             updateToolbar = function () {
                 if (options.activeToolbarClass) {
-                    $(options.toolbarSelector).find('.btn[data-' + options.commandRole + ']').each(function () {
+                    $(options.toolbarSelector).find(toolbarBtnSelector).each(function () {
                         var command = $(this).data(options.commandRole);
                         if (document.queryCommandState(command)) {
                             $(this).addClass(options.activeToolbarClass);
@@ -72,8 +73,7 @@ jQuery(function ($) {
                     try {
                         selection.removeAllRanges();
                     } catch (ex) {
-                        var textRange = document.body.createTextRange();
-                        textRange.select();
+                        document.body.createTextRange().select();
                         document.selection.empty();
                     }
 
@@ -86,18 +86,24 @@ jQuery(function ($) {
                     if (/^image\//.test(fileInfo.type)) {
                         $.when(readFileIntoDataUrl(fileInfo)).done(function (dataUrl) {
                             execCommand('insertimage', dataUrl);
+                        }).fail(function (e) {
+                            options.fileUploadError("file-reader", e);
                         });
+                    } else {
+                        options.fileUploadError("unsupported-file-type", fileInfo.type);
                     }
                 });
             },
             markSelection = function (input, color) {
                 restoreSelection();
-                document.execCommand('hiliteColor', 0, color || 'transparent');
+                if (document.queryCommandSupported('hiliteColor')) {
+                    document.execCommand('hiliteColor', 0, color || 'transparent');
+                }
                 saveSelection();
                 input.data(options.selectionMarker, color);
             },
             bindToolbar = function (toolbar, options) {
-                toolbar.find('a[data-' + options.commandRole + ']').click(function () {
+                toolbar.find(toolbarBtnSelector).click(function () {
                     restoreSelection();
                     editor.focus();
                     execCommand($(this).data(options.commandRole));
@@ -147,8 +153,11 @@ jQuery(function ($) {
                     });
             };
         options = $.extend({}, $.fn.wysiwyg.defaults, userOptions);
+        toolbarBtnSelector = 'a[data-' + options.commandRole + '],button[data-' + options.commandRole + '],input[type=button][data-' + options.commandRole + ']';
         bindHotkeys(options.hotKeys);
-        initFileDrops();
+        if (options.dragAndDropImages) {
+            initFileDrops();
+        }
         bindToolbar($(options.toolbarSelector), options);
         editor.attr('contenteditable', true)
             .on('mouseup keyup mouseout', function () {
@@ -184,6 +193,8 @@ jQuery(function ($) {
         commandRole: 'edit',
         activeToolbarClass: 'btn-info',
         selectionMarker: 'edit-focus-marker',
-        selectionColor: 'darkgrey'
+        selectionColor: 'darkgrey',
+        dragAndDropImages: true,
+        fileUploadError: function (reason, detail) { console.log("File upload error", reason, detail); }
     };
-});
+}(window.jQuery));

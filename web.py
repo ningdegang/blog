@@ -18,7 +18,7 @@ class BaseHandler(tornado.web.RequestHandler):
         return self.get_secure_cookie("sessionid")
 
 class IndexHandler(BaseHandler):
-    #@tornado.web.authenticated
+    @tornado.web.authenticated
     def get(self):
         #self.render('boot.html')
         b = blog() 
@@ -36,12 +36,13 @@ class LoginHandler(BaseHandler):
     def get(self):
         self.render("login.htm")
     def post(self):
-        self.write("success")
-        return
+        #self.write("success")
+        #self.set_secure_cookie("sessionid", self.get_argument("username"))
+        #return
         b = blog()  
         if b.VerifyUser(self.get_argument("username"), self.get_argument("passwd")):
             self.set_secure_cookie("sessionid", self.get_argument("username"))
-            self.redirect("/")
+            self.write("success")
         else:
             self.write("login failed")
             
@@ -60,7 +61,7 @@ class ListHandler(BaseHandler):
         num, ret = b.get_context_by_title(self.get_current_user(),title)
         if num == 0 : return self.redirect("/")
         context, ct ,author = ret[0][0], str(ret[0][1]), ret[0][2] 
-        context = context.replace("\r\n", "<br>")
+        #context = context.replace("\r\n", "<br>")
         tt = list()
         num ,ret = b.get_all_articles(self.get_current_user())
         if( num >0):
@@ -69,25 +70,32 @@ class ListHandler(BaseHandler):
 
 class RegisterHandler(BaseHandler):
     def get(self):
-        self.render("register.html")
+        act = self.get_argument("act", "NULL")
+        if act == "NULL":
+            self.render("register.html")
+        else:
+            b = blog()
+            name = self.get_argument("name", "NULL")
+            if( b.query_user(name)) : return self.write("exists")
+            self.write("not exist")
     def post(self):
+        b = blog()
         name = self.get_argument("username")
         passwd  = self.get_argument("passwd")
-        b = blog()
-        if( b.query_user("name") ) : return self.write("user exists")
         num, ret = b.RegisterUser(name, passwd)
-        if num == 1 : return self.redirect("/login")
+        self.write("success")
+        #self.redirect("/login")
 class CreateBlogHandler(BaseHandler):
-    #@tornado.web.authenticated
+    @tornado.web.authenticated
     def get(self):
         self.render("create.html")
-    #@tornado.web.authenticated
+    @tornado.web.authenticated
     def post(self):
         title = self.get_argument("title")
-        context =  self.get_argument("context").replace("\r\n", "<br>")
-        self.write("title: " + title+"<br>")
-        self.write("context: " + context+"<br>")
-        return 
+        context =  self.get_argument("context")
+        #self.write("title: " + title+"<br>")
+        #self.write("context: " + context+"<br>")
+        #return 
         author = self.get_current_user()
         b = blog()
         num,ret= b.save_blog(author, title, context)

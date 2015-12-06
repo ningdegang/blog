@@ -43,9 +43,9 @@ class mysql():
         logging.info("sql: %s" % sql)
         try:
             num = self.cur.execute(sql);
-            self.cur.close()
-        except:
+        except Exception, r:
             self.init()
+            logging.error("exec %s  failed, reason:%s" % (sql, str(r)))
             return 0, None
         self.conn.commit()
         logging.debug("total db action: %d rows" % num)
@@ -96,6 +96,6 @@ class blog:
         num ,ret = blog.db.query("select passwd from user where user='%s'; " % user)
         if(num == 0): return False
         logging.info("passwd from web:%s, passw from db:%s" % (passwd,str(ret[0][0])))
-        if ret[0][0] == passwd: return True 
+        if str(ret[0][0]) == passwd: return True 
         return False
         
