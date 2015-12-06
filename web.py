@@ -1,6 +1,9 @@
+#!/usr/bin/env python
+
 import os.path
 import random
 import logging
+import json
 
 import tornado.httpserver
 import tornado.ioloop
@@ -40,11 +43,14 @@ class LoginHandler(BaseHandler):
         #self.set_secure_cookie("sessionid", self.get_argument("username"))
         #return
         b = blog()  
-        if b.VerifyUser(self.get_argument("username"), self.get_argument("passwd")):
+        ret = b.VerifyUser(self.get_argument("username"), self.get_argument("passwd"))
+        if ret.get("ret") == 0:
             self.set_secure_cookie("sessionid", self.get_argument("username"))
-            self.write("success")
+            ret = json.dumps(ret)
+            self.write(ret)
         else:
-            self.write("login failed")
+            ret = json.dumps(ret)
+            self.write(ret)
             
     
 

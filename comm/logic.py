@@ -1,28 +1,9 @@
 import os, sys
 import logging
 import MySQLdb
+
 def verify(name, pwd):
         return True
-
-
-def deamon():
-    pid = os.fork()
-    if pid > 0:
-        sys.exit(0)
-    #os.chdir("/")
-    os.setsid()
-    os.umask(0)
-    pid = os.fork()
-    if pid > 0:
-        sys.exit(0)
-    sys.stdout.flush()
-    sys.stderr.flush()
-    si = file("/dev/null", 'r')
-    so = file("/dev/null", 'a+')
-    se = file("/dev/null", 'a+', 0)
-    os.dup2(si.fileno(), sys.stdin.fileno())
-    os.dup2(so.fileno(), sys.stdout.fileno())
-    os.dup2(se.fileno(), sys.stderr.fileno())
 
 class mysql():
     def __init__(self, vhost='localhost', vuser='root', vpasswd='root', vdb='blog', vport=3306):
@@ -94,8 +75,8 @@ class blog:
     def VerifyUser(self, user, passwd):
         user, passwd = blog.db.escape(user, passwd)
         num ,ret = blog.db.query("select passwd from user where user='%s'; " % user)
-        if(num == 0): return False
+        if(num == 0): return {"ret":-1, "msg":"Invalid User"}
         logging.info("passwd from web:%s, passw from db:%s" % (passwd,str(ret[0][0])))
-        if str(ret[0][0]) == passwd: return True 
-        return False
+        if str(ret[0][0]) == passwd: return {"ret":0, "msg":"OK"}
+        return {"ret":-1, "msg":"Invalid passwd"}
         

@@ -103,7 +103,8 @@ $(document).ready(function(){
         var post_data ={"username":name, "passwd":passwd, "_xsrf":getCookie("_xsrf")};
         $.post("/login",post_data, function(ret_data, status){
             //alert("post return data: "+ret_data);
-            if(ret_data.indexOf("success") >= 0)
+            var a = JSON.parse(ret_data);
+            if(a.ret === 0)
             {
                 //alert("success");
                 //$("#login_error").html("<font color=\"green\">login ok</font>");
@@ -113,7 +114,7 @@ $(document).ready(function(){
             else 
             {
                 //alert("failed");
-                $("#login_error").html("<font color=\"red\">passwd invalid</font>");
+                $("#login_error").html("<font color=\"red\">"+a.msg+"</font>");
                 $("#login_error").css({"display":"inline"});
             }
         }); 

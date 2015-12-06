@@ -17,5 +17,6 @@
             <label id="login_error"></label>
         </div>
         <button class="btn btn-lg btn-primary btn-block" type="submit" id="login_button">Sign in</button>
+        {% raw xsrf_form_html() %}
     </div> 
 {% end %}
