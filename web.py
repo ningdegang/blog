@@ -145,11 +145,14 @@ if __name__ == '__main__':
     }
     app = tornado.web.Application(
         handlers = handlers,
-        debug=True,
+        debug=False,
         **settings)
     #logic.deamon()
     #tornado.options.options.log_file_prefix = os.path.join(os.path.dirname(__file__), "log")+ "/access.log"
     tornado.options.parse_command_line()
+
     http_server = tornado.httpserver.HTTPServer(app)
-    http_server.listen(options.port)
+    http_server.bind(options.port, options.host)
+    http_server.start(num_processes=0) # tornado将按照cpu核数来fork进程
     tornado.ioloop.IOLoop.instance().start()
+

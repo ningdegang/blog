@@ -8,7 +8,6 @@ from sqlalchemy import create_engine, Table, Column, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, backref
 from sqlalchemy import String, Integer, DateTime, TIMESTAMP, BigInteger, Float
-import pymongo 
 
 from config.config import config
 
@@ -45,28 +44,23 @@ def init_db():
     Session = sessionmaker(bind=engine)
     return engine
 
-class MongoClient():
-    def __init__(self, host="127.0.0.1", port=27017):
-        self.conn = pymongo.MongoClient(host=host, port=port)
-    def __del__(self):
-        self.conn.close()
-    def db(self,db):
-        self.cur_db = self.conn[db]
-        return self.cur_db
-    def collection(self, c):
-        self.cur_collection = self.cur_db[c]
-        return self.cur_collection
-    def close(self):
-        self.conn.close()
-    
+
+from mongoengine import connect, Document, IntField, StringField, DateTimeField
+connect("localhost", 27017)
+
+class blog(Document):
+    create_time = DateTimeField()
+    modify_time = DateTimeField()
+    content = StringField()
+
 
 def test():
     engine = init_db()
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
-    client = MongoClient()
-    client.db("test")
-    client.collection("movies")
+    bb = blog.objects()
+    for b in bb :
+        print b.content
 
 if __name__ == "__main__":
     test()
