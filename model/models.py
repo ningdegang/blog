@@ -9,6 +9,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, backref
 from sqlalchemy import String, Integer, DateTime, TIMESTAMP, BigInteger, Float
 
+import sys 
+sys.path.append("..")
 from config.config import config
 
 class Query():
@@ -46,19 +48,39 @@ def init_db():
 
 
 from mongoengine import connect, Document, IntField, StringField, DateTimeField
-connect("localhost", 27017)
+connect("blog", host="localhost", port=27017)
 
-class blog(Document):
+class Blog(Document):
     create_time = DateTimeField()
     modify_time = DateTimeField()
     content = StringField()
+
+@contextmanager
+def make_session():
+    global Session
+    if Session: session =Session(); yield session
+    else:
+        engine = init_db()
+        Session = sessionmaker(bind=engine)
+        session = Session()
+        yield session
+    session.commit()
+    
 
 
 def test():
     engine = init_db()
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
-    bb = blog.objects()
+    degang = User()
+    degang.username = "degang"
+    degang.password = "test"
+    with make_session() as session:
+        session.add(degang)
+    b = Blog()
+    b.content= "asdfaf"
+    b.save()
+    bb = Blog.objects()
     for b in bb :
         print b.content
 
