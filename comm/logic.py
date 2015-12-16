@@ -10,9 +10,8 @@ class mysql():
         self.host, self.user, self.passwd,self.db, self.port = vhost, vuser, vpasswd,vdb, vport
         self.flag = False
     def __del__(self):
-        self.cur.close()
-        self.conn.commit()
-        self.conn.close()
+        if hasattr(self, "cur") : self.cur.close()
+        if hasattr(self, "conn"): self.conn.commit();self.conn.close()
     def init(self):
         self.conn=MySQLdb.connect(self.host,self.user,self.passwd,self.db,self.port)
         self.cur=self.conn.cursor()
