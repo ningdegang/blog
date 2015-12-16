@@ -14,28 +14,23 @@ from tornado.options import define, options
 from comm import logic
 from comm.logic import blog
 from route import route
+from config import config
+from model import models
 
 define("port", default=80, help="run on the given port", type=int)
 
 def main():
-    settings = {
-    "template_path": os.path.join(os.path.dirname(__file__), "templates"),
-    "static_path": os.path.join(os.path.dirname(__file__), "static"),
-    "cookie_secret": "bZJc2sWbQLKos6GkHn/VB9oXwQt8S0R0kRvJ5/xJ89E=",
-    "xsrf_cookies": True,
-    "login_url": "/login",
-    "debug": False,
-    }
     app = tornado.web.Application(
         handlers = route.handlers,
-        **settings)
+        **config.settings)
     #logic.deamon()
     #tornado.options.options.log_file_prefix = os.path.join(os.path.dirname(__file__), "log")+ "/access.log"
     tornado.options.parse_command_line()
 
     try:  
+        models.init_db()
         http_server = tornado.httpserver.HTTPServer(app)
-        if settings.get("debug"):
+        if config.settings.get("debug"):
             http_server.listen(options.port)
         else:
             http_server.bind(options.port)

@@ -2,6 +2,8 @@
 
 
 import tornado.web
+from model  import models
+import json
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -11,8 +13,7 @@ class IndexHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
         #self.render('boot.html')
-        b = blog() 
-        num, ret = b.get_all_articles(self.get_current_user())
+        b = Blog.objects(user=user)
         t, c = list(), list()
         if num > 0 :
             t = [x[0] for x in ret]
@@ -24,20 +25,16 @@ class IndexHandler(BaseHandler):
 
 class LoginHandler(BaseHandler):
     def get(self):
-        self.render("login.htm")
+        self.render("login.html")
     def post(self):
-        #self.write("success")
-        #self.set_secure_cookie("sessionid", self.get_argument("username"))
-        #return
-        b = blog()  
-        ret = b.VerifyUser(self.get_argument("username"), self.get_argument("passwd"))
-        if ret.get("ret") == 0:
+        username, passwd = self.get_argument("username"), self.get_argument("passwd")
+        user = models.User.query.filter_by(username= username).first()
+        if user and user.username == username and user.password == passwd:
             self.set_secure_cookie("sessionid", self.get_argument("username"))
-            ret = json.dumps(ret)
-            self.write(ret)
+            self.redirect("/")
         else:
-            ret = json.dumps(ret)
-            self.write(ret)
+            self.set_header("Content-Type", "urlencode")
+            self.write("asdfasdf&asdfa")
             
     
 

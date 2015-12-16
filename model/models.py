@@ -13,16 +13,16 @@ import sys
 sys.path.append("..")
 from config.config import config
 
-class Query():
-    def __get__(self, instance, owner):
-        if Session :return Session().query(owner)
+class Query(object):
+    def __get__(self, obj, objtype):
+        if Session : return Session().query(objtype)
         return None
 
 class Base(object):
     id = Column(Integer, primary_key=True)
     created = Column(DateTime, default=datetime.now)
     modified = Column(DateTime, default=datetime.now, onupdate=datetime.now)
-    query =  Query()
+    query = Query()
 
 Base = declarative_base(cls=Base)
 Session = None
@@ -48,6 +48,7 @@ def init_db():
 
 
 from mongoengine import connect, Document, IntField, StringField, DateTimeField
+
 connect("blog", host="localhost", port=27017)
 
 class Blog(Document):
@@ -77,6 +78,9 @@ def test():
     degang.password = "test"
     with make_session() as session:
         session.add(degang)
+    qu = User.query
+    print qu, type(qu), dir(qu)
+    users = User.query.filter_by(username="degang")
     b = Blog()
     b.content= "asdfaf"
     b.save()
