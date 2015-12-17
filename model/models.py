@@ -54,6 +54,8 @@ connect("blog", host="localhost", port=27017)
 class Blog(Document):
     create_time = DateTimeField()
     modify_time = DateTimeField()
+    user = StringField()
+    title = StringField()
     content = StringField()
 
 @contextmanager

@@ -13,28 +13,30 @@ class IndexHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
         #self.render('boot.html')
-        b = Blog.objects(user=user)
-        t, c = list(), list()
-        if num > 0 :
-            t = [x[0] for x in ret]
-            c = [x[1] for x in ret]
-            logging.info("titles: %s" % str(t))
-            self.render('index.htm', titles=t, contexts=c)
+        data = {"titles":list(), "contexts":list()}
+        bb = models.Blog.objects(user= self.get_current_user())
+        if bb.count() > 0:
+            for b in bb :
+                data["titles"].append(b.title)
+                data["contexts"].append(b.content)
+            self.render('index.htm', **data)
         else:
             self.write("<a href='/create'>you have no articles, try write new one!!! </a>")
 
 class LoginHandler(BaseHandler):
     def get(self):
-        self.render("login.html")
+        self.render("login.htm")
     def post(self):
         username, passwd = self.get_argument("username"), self.get_argument("passwd")
         user = models.User.query.filter_by(username= username).first()
+        ret = dict()
         if user and user.username == username and user.password == passwd:
             self.set_secure_cookie("sessionid", self.get_argument("username"))
-            self.redirect("/")
+            ret["ret"] = 0
         else:
-            self.set_header("Content-Type", "urlencode")
-            self.write("asdfasdf&asdfa")
+            ret["ret"] = -1
+        self.write(json.dumps(ret))
+            
             
     
 
@@ -47,11 +49,9 @@ class ListHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
         title = self.get_argument("title")
-        b = blog()
-        num, ret = b.get_context_by_title(self.get_current_user(),title)
-        if num == 0 : return self.redirect("/")
-
-
+        b = models.Blog.objects(user=self.get_current_user(), title = title).first()
+        if not b: return self.redirect("/")
+        self.write(b.content)
 
 class RegisterHandler(BaseHandler):
     def get(self):
@@ -59,15 +59,16 @@ class RegisterHandler(BaseHandler):
         if act == "NULL":
             self.render("register.html")
         else:
-            b = blog()
             name = self.get_argument("name", "NULL")
-            if( b.query_user(name)) : return self.write("exists")
+            b = models.User.query.filter_by(username= name)
+            if b : return self.write("exists")
             self.write("not exist")
     def post(self):
-        b = blog()
-        name = self.get_argument("username")
-        passwd  = self.get_argument("passwd")
-        num, ret = b.RegisterUser(name, passwd)
+        b = models.User()
+        b.username = self.get_argument("username")
+        b.password  = self.get_argument("passwd")
+        with models.make_session() as session:
+            session.add(b)
         self.write("success")
         #self.redirect("/login")
 class CreateBlogHandler(BaseHandler):
@@ -82,23 +83,27 @@ class CreateBlogHandler(BaseHandler):
         #self.write("context: " + context+"<br>")
         #return 
         author = self.get_current_user()
-        b = blog()
-        num,ret= b.save_blog(author, title, context)
-        if num == 1: return self.redirect("/")
-        self.write("create blog failed") 
+        b = models.Blog()
+        b.content = context
+        b.title = title
+        b.user = author
+        b.save()
+        return self.redirect("/")
 class DelBlogHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
-        b = blog()
         title = self.get_argument("title")
-        b.del_blog(self.get_current_user(), title)
+        b = models.Blog.objects(user = self.get_current_user(), title = title).first()
+        if b : b.remove() 
         self.redirect("/")
 class ModifyBlogHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
-        b = blog()
         old_title = self.get_argument("old_title")
         new_title = self.get_argument("new_title")
         new_context = self.get_argument("new_context")
-        b.update_blog(self.get_current_user(), old_title, new_title, new_context)
+        b = models.Blog.objects(user = self.get_current_user(), title = old_title).first()
+        b.title = new_title
+        b.content = new_content
+        b.update()
         self.redirect("/list?title='%s'" % new_title)

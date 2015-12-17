@@ -106,14 +106,15 @@ $(document).ready(function(){
             var a = JSON.parse(ret_data);
             if(a.ret === 0)
             {
-                //alert("success");
+                alert("success");
                 //$("#login_error").html("<font color=\"green\">login ok</font>");
                 //$("#login_error").css({"display":"inline"});
+                alert("asdfadsf");
                 location.href="/";
             }
             else 
             {
-                //alert("failed");
+                alert("failed");
                 $("#login_error").html("<font color=\"red\">"+a.msg+"</font>");
                 $("#login_error").css({"display":"inline"});
             }
