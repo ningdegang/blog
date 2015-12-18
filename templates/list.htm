@@ -1,10 +1,7 @@
 {% extends 'base.htm' %}
 {% block main %}
-    {% for b in  bb %}
     <div class="big-margin">
         <h2> {{b.get("title")}} </h2>
         <p> {{b.get("content")}} </p>
-        <p> <a class="btn" href="list?title={{b.get('title')}}">查看详细...</a> </p>
     </div>
-    {% end  %}
-{% end  %}
+{% end %}

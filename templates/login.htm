@@ -1,11 +1,11 @@
-{% extends "base.html" %}  
+{% extends "base.htm" %}  
 {% block head %}
     <title>Signin for MyLog</title>
-    <link href="static/css/bootstrap.min.css" rel="stylesheet">
-    <link href="static/css/signin.css" rel="stylesheet">
+    <link href="{{static_url('css/bootstrap.min.css')}}" rel="stylesheet">
+    <link href="{{static_url('css/signin.css')}}" rel="stylesheet">
 {% end %}
 
-{% block body %}
+{% block  main %}
     <div class="form-signin container">
         <h2 class="form-signin-heading">Please sign in</h2>
         <label for="username" class="sr-only">Email address</label>
@@ -18,5 +18,10 @@
         </div>
         <button class="btn btn-lg btn-primary btn-block" type="submit" id="login_button">Sign in</button>
         {% raw xsrf_form_html() %}
+        <a href="/regist">new account </a>
     </div> 
+{% end %}
+{% block jslib %}
+<script src="{{static_url('js/main.js')}}"></script>
+<script src="{{static_url('js/jquery.md5.js')}}"></script>
 {% end %}

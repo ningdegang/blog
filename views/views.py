@@ -4,6 +4,7 @@
 import tornado.web
 from model  import models
 import json
+import pyquery 
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -12,14 +13,13 @@ class BaseHandler(tornado.web.RequestHandler):
 class IndexHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        #self.render('boot.html')
-        data = {"titles":list(), "contexts":list()}
+        data = list()
         bb = models.Blog.objects(user= self.get_current_user())
         if bb.count() > 0:
             for b in bb :
-                data["titles"].append(b.title)
-                data["contexts"].append(b.content)
-            self.render('index.htm', **data)
+                doc = b.content and pyquery.PyQuery(b.content).text() or ""
+                data.append({"title":b.title, "content":doc})
+            self.render('index.html', bb=data)
         else:
             self.write("<a href='/create'>you have no articles, try write new one!!! </a>")
 
@@ -49,9 +49,10 @@ class ListHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
         title = self.get_argument("title")
-        b = models.Blog.objects(user=self.get_current_user(), title = title).first()
-        if not b: return self.redirect("/")
-        self.write(b.content)
+        data = models.Blog.objects(user=self.get_current_user(), title = title).first()
+        if not data: return self.redirect("/")
+        data = {"title":data.title, "content":data.content}
+        self.render("list.htm", b=data)
 
 class RegisterHandler(BaseHandler):
     def get(self):
